@@ -9,11 +9,13 @@ import numpy
 import pickle
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+
+
 def main():
     print('..loading data')
 
-    feature_matrix, mesh_list = transform_data('medline_title_abstract_mesh.txt', False)
-    target_dict = parse_mesh('/Users/ericrincon/Downloads/desc2015.xml', False)
+    feature_matrix, mesh_list = transform_data('', False)
+    target_dict = parse_mesh('', False)
 
     target_matrix = numpy.zeros((feature_matrix.shape[0], len(mesh_list)))
 
@@ -37,6 +39,8 @@ def main():
     print('..training')
     model.fit(feature_matrix.todense(), target_matrix, validation_split=.1, show_accuracy=True)
 
+    print('..saving model')
+    model.save_weights()
 
 #total docs 61898
 def transform_data(path, save):
@@ -90,12 +94,14 @@ def parse_mesh(xml_path, save):
 
     Returns the name of the output file
 """
-def parse_multiple_files(xml_path, output_file_name):
-    file_name = 'Doc2vec/medline15n0779.xml'
-    text_file = 'medline_title_abstract_mesh.txt'
-    file = open(text_file, 'w')
+def parse_multiple_files(xml_path, output_file_name='output.txt', save=False):
+    if save:
+        file = open(output_file_name, 'w')
     files = [os.path.join(xml_path,o) for o in os.listdir(xml_path) if os.path.isfile(os.path.join(xml_path,o))]
     files.pop(0)
+
+    counts = {'ArticleTitle': 0, 'AbstractText': 0, 'MeshHeading': 0, 'Total': 0}
+
 
     for zip in files:
         archive = zipfile.ZipFile(zip, 'r')
@@ -105,7 +111,6 @@ def parse_multiple_files(xml_path, output_file_name):
         xml = archive.open(file_name)
 
         for out_event, out_element in etree.iterparse(xml):
-
             if out_event == 'end' and out_element.tag == 'MedlineCitationSet':
                 for element in out_element.iterchildren():
                     if element.tag == 'MedlineCitation':
@@ -119,19 +124,31 @@ def parse_multiple_files(xml_path, output_file_name):
                                     if ele.tag == 'ArticleTitle':
                                         if ele.text is not None:
                                             title = ele.text
-                                            break
-                            if c.tag == 'OtherAbstract':
+                                            count = counts['ArticleTitle'] + 1
+                                            counts['ArticleTitle'] = count
+                                    if ele.tag == 'Abstract':
+                                        for abstract_ele in ele.iterchildren():
+                                            if abstract_ele.tag == 'AbstractText':
+                                                abstract = abstract_ele.text
+                                                count = counts["AbstractText"] + 1
+                                                counts["AbstractText"] = count
+
+                            if c.tag == 'OtherAbstract' and abstract is not None:
                                 for abstract_ele in c.iterchildren():
                                     if abstract_ele.tag == "AbstractText":
                                         if abstract_ele.text is not None:
                                             abstract = abstract_ele.text
-                                            break
+                                            count = counts["AbstractText"] + 1
+                                            counts["AbstractText"] = count
                             if c.tag == 'MeshHeadingList':
                                 mesh_terms = ''
+                                count = counts['MeshHeading'] + 1
+                                counts['MeshHeading'] = count
                                 for i, ele in enumerate(c.iterchildren()):
                                     if ele.tag == 'MeshHeading':
                                         for heading_elem in ele.iterchildren():
                                             if heading_elem.text is not None:
+
                                                 if i == 0:
                                                     mesh_terms = heading_elem.text
                                                 else:
@@ -139,7 +156,13 @@ def parse_multiple_files(xml_path, output_file_name):
                                 if mesh_terms == '':
                                     mesh_terms = None
                         if (abstract and title and mesh_terms) is not None:
-                            file.write(title + ' || ' + abstract + ' || ' + mesh_terms + '\n')
+                            if save:
+                                file.write(title + ' || ' + abstract + ' || ' + mesh_terms + '\n')
+
                     element.clear()
+                    count = counts['Total'] + 1
+                    counts['Total'] = count
+
+    print(counts)
 if __name__ == '__main__':
     main()
