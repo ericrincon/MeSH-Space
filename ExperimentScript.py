@@ -54,7 +54,7 @@ def transform_data(path, save):
                 text = title + abstract
                 corpus.append(text)
                 mesh_list.append(mesh.split('|'))
-    vectorizer  = TfidfVectorizer(ngram_range=(1, 2), min_df=3, max_features=50000)
+    vectorizer  = TfidfVectorizer(ngram_range=(1), min_df=3, max_features=50000)
     feature_matrix = vectorizer.fit_transform(corpus)
 
     if save:
