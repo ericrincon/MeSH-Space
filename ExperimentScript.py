@@ -48,7 +48,12 @@ def transform_data(path, save):
     mesh_list = []
     with open(path) as file:
         for line in file:
-            title, abstract, mesh = line.split('||')
+            split_line = line.split('||')
+
+            if len(split_line) == 3:
+                title, abstract, mesh = split_line
+            else:
+                continue
 
             if not abstract.strip() == 'Abstract available from the publisher.':
                 text = title + abstract
