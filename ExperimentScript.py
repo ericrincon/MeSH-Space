@@ -14,7 +14,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 def main():
     print('..loading data')
 
-    feature_matrix, mesh_list = transform_data('', False)
+    feature_matrix, mesh_list = transform_data('', False, 1000)
     target_dict = parse_mesh('', False)
 
     target_matrix = numpy.zeros((feature_matrix.shape[0], len(mesh_list)))
@@ -42,12 +42,14 @@ def main():
     print('..saving model')
     model.save_weights()
 
-#total docs 61898
-def transform_data(path, save):
+
+def transform_data(path, save, limit=None):
     corpus = []
     mesh_list = []
+
+
     with open(path) as file:
-        for line in file:
+        for i, line in enumerate(file):
             split_line = line.split('||')
 
             if len(split_line) == 3:
@@ -59,7 +61,11 @@ def transform_data(path, save):
                 text = title + abstract
                 corpus.append(text)
                 mesh_list.append(mesh.split('|'))
-    vectorizer  = TfidfVectorizer(ngram_range=(1), min_df=3, max_features=50000)
+
+            if limit:
+                if i == limit:
+                    break
+    vectorizer = TfidfVectorizer(ngram_range=(1), min_df=3, max_features=50000)
     feature_matrix = vectorizer.fit_transform(corpus)
 
     if save:
