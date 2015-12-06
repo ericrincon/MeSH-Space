@@ -4,6 +4,8 @@ import ANNMesh
 import gzip
 import zipfile
 import os
+import sys
+import getopt
 from lxml import etree
 import numpy
 import pickle
@@ -12,10 +14,26 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 def main():
+    #Get file names
+    all_mesh_terms_path = ''
+    abstracts_path = ''
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'm:d:', ['mesh_terms=', 'abstract_data'])
+    except getopt.GetoptError:
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt in ('-m', '--mesh_terms'):
+            all_mesh_terms_path = arg
+        elif opt in ('-d', 'abstract_data'):
+            abstracts_path = arg
+        else:
+            sys.exit(2)
+
     print('..loading data')
 
-    feature_matrix, mesh_list = transform_data('', False, 1000)
-    target_dict = parse_mesh('', False)
+    feature_matrix, mesh_list = transform_data(abstracts_path, False, 1000)
+    target_dict = parse_mesh(all_mesh_terms_path, False)
 
     target_matrix = numpy.zeros((feature_matrix.shape[0], len(mesh_list)))
 
