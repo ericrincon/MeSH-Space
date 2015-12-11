@@ -38,7 +38,7 @@ def create_model(input_dimension, hidden_layer_size, n_classes, dropout=False, d
     model.add(Activation('softmax'))
 
     sgd = SGD(
-        lr=0.1,
+        lr=0.01,
         decay=1e-6,
         momentum=0.9,
         nesterov=True
