@@ -180,7 +180,7 @@ def main():
             full_path += '/' + p
         full_path += '/'
 
-    if preprocess == True:
+    if preprocess:
         run_preprocess(all_mesh_terms_path, sample_size, full_path, abstracts_path)
     else:
         run_train_model(all_mesh_terms_path, abstracts_path, model_name, epochs, n_hidden_units, sample_size,
@@ -348,13 +348,26 @@ def process_save_data(limit, target_dict, path='', abstract_path='', pre=False):
 
         assert not abstract_path == '', 'Need a path for data!'
 
+        i = 0
+
         with open(abstract_path) as file:
-            for i, line in enumerate(file):
+            for line in file:
                 if i == limit:
                     break
-                title, abstract_text, mesh_terms = line.split('||')
-                abstracts.append(abstract_text)
-                mesh_list.append(mesh_terms.split('|'))
+
+                split_line = line.split('||')
+
+                if len(split_line) == 3:
+                    title, abstract, mesh = split_line
+                else:
+                    continue
+
+                if not abstract.strip() == 'Abstract available from the publisher.':
+                    text = title + abstract
+                    abstracts.append(text)
+                    mesh_list.append(mesh.split('|'))
+                    i += 1
+
         #Create h5py dataset for both X and Y
 
         x = vectorizer.fit_transform(abstracts).todense()
