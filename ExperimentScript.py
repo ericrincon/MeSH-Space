@@ -51,7 +51,6 @@ class BatchGenerator:
         self.Y_train = Y_train
 
     def __iter__(self):
-        print(self.examples, self.n_batch)
         for n in range(int(self.examples/self.n_batch)):
             yield self.X_train['data'][n * self.n_batch: (n + 1)* self.n_batch, :],\
                   self.Y_train['data'][n * self.n_batch: (n + 1)* self.n_batch, :]
@@ -60,6 +59,8 @@ class BatchGenerator:
 def train(epochs, model, n_examples, file_path, checkpointer, loss_history, n_per_batch, target_dict, mini_batch,
           X_train, Y_train):
     batch_generator = BatchGenerator(n_examples, file_path, n_per_batch, target_dict, X_train, Y_train)
+    train_loss = []
+    valid_loss = []
 
     for epoch in range(epochs):
         print('epoch: ', epoch + 1)
@@ -68,7 +69,10 @@ def train(epochs, model, n_examples, file_path, checkpointer, loss_history, n_pe
             model.fit(X_train, Y_train, validation_split=.1, show_accuracy=True, callbacks=[checkpointer, loss_history],
                       nb_epoch=1, batch_size=mini_batch)
 
-    return model
+        train_loss += loss_history.losses
+        valid_loss += loss_history.val_losses
+
+    return model, train_loss, valid_loss
 
 
 def get_mesh_term_matrix(target_dict, mesh_list, n):
@@ -107,18 +111,17 @@ def run_train_model(all_mesh_terms_path, abstracts_path, model_name, epochs, n_h
     checkpointer = ModelCheckpoint(filepath=model_name, verbose=1, save_best_only=True)
     loss_history = LossHistory()
 
-    model = train(epochs, model, sample_size, abstracts_path, checkpointer, loss_history, batch_size, target_dict,
-                  mini_batch_size, X_train, Y_train)
-
-
+    model, train_loss_history, valid_loss_history = train(epochs, model, sample_size, abstracts_path, checkpointer,
+                                                     loss_history, batch_size, target_dict, mini_batch_size, X_train,
+                                                     Y_train)
+    print(len(train_loss_history), len(valid_loss_history))
     print('..saving model')
     model.save_weights("final_" + model_name)
 
     #Plot the loss curves
     epochs_axis = numpy.arange(1, epochs + 1)
-
-    train_loss, = plt.plot(epochs_axis, loss_history.losses, label='Train')
-    val_loss, = plt.plot(epochs_axis, loss_history.val_losses, label='Validation')
+    train_loss, = plt.plot(epochs_axis, train_loss_history, label='Train')
+    val_loss, = plt.plot(epochs_axis, valid_loss_history, label='Validation')
     plt.legend(handles=[train_loss, val_loss])
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
@@ -139,7 +142,7 @@ def main():
     #Batch size is not mini batch size but the size of examples too load at once
     batch_size = 5000
 
-    mini_batch_size = 32
+    mini_batch_size = 64
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'm:d:n:e:h:s:b:mb:p:', ['mesh_terms=', 'abstract_data','model_name',
@@ -166,14 +169,18 @@ def main():
         elif opt in ('-mb', 'mini_batch_size'):
             mini_batch_size = int(arg)
         elif opt in ('-p', 'prepreprocess'):
-            preprocess = bool(arg)
+            if opt.lower() == "false":
+                preprocess = False
+            elif opt.lower() == 'true':
+                preprocess = True
+            else:
+                preprocess = False
         else:
             sys.exit(2)
 
     split_path = abstracts_path.split('/')
     split_path.pop()
     full_path = ''
-
     if not len(split_path) == 0:
         full_path = split_path.pop(0) + '/'
         for p in split_path:
@@ -380,7 +387,7 @@ def process_save_data(limit, target_dict, path='', abstract_path='', pre=False):
     else:
         X_train = h5py.File(X_file_name, 'r')
         Y_train = h5py.File(Y_file_name, 'r')
-        print(X_train['data'].value)
+
         return X_train, Y_train
 
 if __name__ == '__main__':
