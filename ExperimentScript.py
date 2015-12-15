@@ -8,7 +8,6 @@ import sys
 import getopt
 import h5py
 
-import linecache
 import matplotlib.pyplot as plt
 
 from lxml import etree
@@ -18,6 +17,7 @@ import pickle
 from sklearn.feature_extraction.text import TfidfVectorizer
 from keras.callbacks import ModelCheckpoint
 
+#Number of abstracts in dataset
 total_documents = 21850751
 
 class LossHistory(keras.callbacks.Callback):
@@ -62,6 +62,7 @@ def train(epochs, model, n_examples, file_path, checkpointer, loss_history, n_pe
     train_loss = []
     valid_loss = []
 
+
     for epoch in range(epochs):
         print('epoch: ', epoch + 1)
 
@@ -104,7 +105,11 @@ def run_train_model(all_mesh_terms_path, abstracts_path, model_name, epochs, n_h
     print('..loading data')
     target_dict = parse_mesh(all_mesh_terms_path, False)
     X_train, Y_train = process_save_data(sample_size, target_dict, full_path, abstracts_path)
+
     model = ANNMesh.create_model(X_train['data'].shape[1], n_hidden_units, len(target_dict))
+
+    if os.path.exists(model_name):
+        model.load_weights(model_name)
 
     print('..training')
 
@@ -181,6 +186,7 @@ def main():
     split_path = abstracts_path.split('/')
     split_path.pop()
     full_path = ''
+
     if not len(split_path) == 0:
         full_path = split_path.pop(0) + '/'
         for p in split_path:
