@@ -1,5 +1,11 @@
 __author__ = 'ericrincon'
 
+
+import matplotlib
+
+# So that matplotlib can plot the training error and validation error of network.
+matplotlib.use('Agg')
+
 import ANNMesh
 import zipfile
 import os
