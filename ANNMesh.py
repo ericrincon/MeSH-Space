@@ -1,4 +1,7 @@
 __author__ = 'ericrincon'
+
+import theano
+
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout
 from keras.layers.core import Activation
@@ -52,4 +55,11 @@ def create_model(input_dimension, hidden_layer_size, n_classes, dropout=False, d
 
 
     return model
+
+def test_output(model, x):
+    model.pre
+
+
+
+
 

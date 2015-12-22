@@ -156,9 +156,10 @@ def main():
     mini_batch_size = 64
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'm:d:n:e:h:s:b:mb:p:', ['mesh_terms=', 'abstract_data','model_name',
-                                                                       'epochs', 'hidden_units', 'sample_size',
-                                                                       'batch_size', 'preprocess'])
+        opts, args = getopt.getopt(sys.argv[1:], 'm:d:n:e:h:s:b:mb:p:v:', ['mesh_terms=', 'abstract_data','model_name',
+                                                                           'epochs', 'hidden_units', 'sample_size',
+                                                                           'batch_size', 'preprocess', 'verbose=',
+                                                                           'hidden_layers'])
     except getopt.GetoptError:
         sys.exit(2)
 
@@ -394,6 +395,7 @@ def process_save_data(limit, target_dict, path='', abstract_path='', pre=False):
 
         X_train.create_dataset('data', (limit, x.shape[1]), dtype=numpy.float32, data=x)
         Y_train.create_dataset('data', (limit, len(target_dict)), dtype=numpy.float32, data=y)
+
         if not pre:
             return X_train, Y_train
     else:
