@@ -16,6 +16,7 @@ import h5py
 
 import matplotlib.pyplot as plt
 
+from random import sample
 from lxml import etree
 import numpy
 import pickle
@@ -356,6 +357,9 @@ def process_save_data(limit, target_dict, path='', abstract_path='', pre=False):
     abstracts = []
     mesh_list = []
 
+    # sample some extra numbers just in case we dont get to limit
+    lines_to_sample = sample(range(total_documents), limit * 2)
+
     X_file_name = path + 'X_tfidf_abstracts.h5py'
     Y_file_name = path + 'Y_mesh_terms.h5py'
 
@@ -371,9 +375,12 @@ def process_save_data(limit, target_dict, path='', abstract_path='', pre=False):
         i = 0
 
         with open(abstract_path) as file:
-            for line in file:
+            for n_line, line in enumerate(file):
                 if i == limit:
                     break
+
+                if n_line not in lines_to_sample:
+                    continue
 
                 split_line = line.split('||')
 
