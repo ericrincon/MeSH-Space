@@ -1,6 +1,5 @@
 __author__ = 'ericrincon'
 
-
 import matplotlib
 
 # So that matplotlib can plot the training error and validation error of network.
@@ -19,7 +18,8 @@ import matplotlib.pyplot as plt
 from random import sample
 from lxml import etree
 import numpy
-import pickle
+
+from sklearn.externals import joblib
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from keras.callbacks import ModelCheckpoint
@@ -160,7 +160,7 @@ def main():
         opts, args = getopt.getopt(sys.argv[1:], 'm:d:n:e:h:s:b:mb:p:v:', ['mesh_terms=', 'abstract_data','model_name',
                                                                            'epochs', 'hidden_units', 'sample_size',
                                                                            'batch_size', 'preprocess', 'verbose=',
-                                                                           'hidden_layers'])
+                                                                           'hidden_layers', 'headless_plot='])
     except getopt.GetoptError:
         sys.exit(2)
 
@@ -399,6 +399,8 @@ def process_save_data(limit, target_dict, path='', abstract_path='', pre=False):
 
         x = vectorizer.fit_transform(abstracts).todense()
         y = get_mesh_term_matrix(target_dict, mesh_list, len(mesh_list))
+
+        joblib.dump(vectorizer, 'vectorizer.pkl')
 
         X_train.create_dataset('data', (limit, x.shape[1]), dtype=numpy.float32, data=x)
         Y_train.create_dataset('data', (limit, len(target_dict)), dtype=numpy.float32, data=y)
