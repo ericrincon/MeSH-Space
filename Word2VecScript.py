@@ -81,7 +81,9 @@ def main():
 
 def preprocess(text_path, output_file, limit):
     file = open(text_path, 'r')
-    lines_to_sample = sample(range(total_documents), limit * 2)
+
+    if limit:
+        lines_to_sample = sample(range(total_documents), limit * 2)
     output_file = open(output_file, 'w+')
 
     i = 0
@@ -90,9 +92,9 @@ def preprocess(text_path, output_file, limit):
         if limit:
             if i == limit:
                 break
-
-        if n_line not in lines_to_sample:
-            continue
+        if limit:
+            if n_line not in lines_to_sample:
+                continue
 
         split_line = line.split('||')
 
