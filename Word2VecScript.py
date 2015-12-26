@@ -60,7 +60,7 @@ def main():
 
         elif opt in ('-w', '--window_size'):
             window_size = int(arg)
-        elif opt in ('-e', '--epochs')
+        elif opt in ('-e', '--epochs'):
             epochs = int(arg)
         else:
             sys.exit(2)
