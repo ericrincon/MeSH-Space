@@ -151,7 +151,6 @@ def main():
     n_hidden_units = 300
     sample_size = 50000
     preprocess = False
-
     #Batch size is not mini batch size but the size of examples too load at once
     batch_size = 5000
 
@@ -161,7 +160,7 @@ def main():
         opts, args = getopt.getopt(sys.argv[1:], 'm:d:n:e:h:s:b:mb:p:v:', ['mesh_terms=', 'abstract_data','model_name',
                                                                            'epochs', 'hidden_units', 'sample_size',
                                                                            'batch_size', 'preprocess', 'verbose=',
-                                                                           'hidden_layers', 'headless_plot='])
+                                                                           'hidden_layers', 'headless_plot=',])
     except getopt.GetoptError:
         sys.exit(2)
 
@@ -183,12 +182,11 @@ def main():
         elif opt in ('-mb', 'mini_batch_size'):
             mini_batch_size = int(arg)
         elif opt in ('-p', 'prepreprocess'):
-            if opt.lower() == "false":
-                preprocess = False
-            elif opt.lower() == 'true':
+            option = int(arg)
+
+            if option == 1:
                 preprocess = True
-            else:
-                preprocess = False
+
         else:
             sys.exit(2)
 
@@ -207,6 +205,7 @@ def main():
     else:
         run_train_model(all_mesh_terms_path, abstracts_path, model_name, epochs, n_hidden_units, sample_size,
                         batch_size, mini_batch_size, full_path)
+
 
 
 
