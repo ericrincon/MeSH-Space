@@ -30,7 +30,7 @@ def main():
     preprocess_text = False
     min_c = 3
     window_size = 10
-    epochs = 20
+    epochs = 1
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'i:o:m:n:s:p:c:w:e:', ['input_file=', 'output_file=', 'model_name=',
